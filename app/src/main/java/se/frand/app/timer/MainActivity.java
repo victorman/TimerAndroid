@@ -3,14 +3,14 @@ package se.frand.app.timer;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
 
     Timer timer;
     TimerTask timerTask;
-    long time;
+    public static long time;
     Calendar calendar;
     Button startButton;
     Button stopButton;
@@ -28,14 +28,27 @@ public class MainActivity extends Activity {
 
 
 
-    final Handler handler = new Handler();
+    Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         layout = new LinearLayout(this);
+
+
         layout.setOrientation(LinearLayout.VERTICAL);
         timeView = new TextView(this);
         timeView.setTextSize(30.0f);
+
+
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                String missive = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), missive, Toast.LENGTH_SHORT).show();
+                timeView.setText(missive);
+            }
+        };
 
         startButton = new Button(this);
         startButton.setText("start");
@@ -95,25 +108,7 @@ public class MainActivity extends Activity {
 
         calendar = Calendar.getInstance();
 
-
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        calendar.setTime(new Date(time*1000L));
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
-                        final String strDate = simpleDateFormat.format(calendar.getTime());
-
-
-                        timeView.setText(strDate);
-
-                        time+=1;
-                    }
-                });
-            }
-        };
+        timerTask = new StopwatchTask(handler, calendar);
     }
 
 }
